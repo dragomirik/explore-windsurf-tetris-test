@@ -81,6 +81,32 @@ class Tetris {
         this.ctx.fillStyle = 'rgba(0, 0, 15, 0.95)';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
+        // Draw grid background
+        for (let x = 0; x < this.cols; x++) {
+            if (x % 2 === 0) {
+                this.ctx.fillStyle = '#0f0f0f';
+                this.ctx.fillRect(x * this.blockSize, 0, this.blockSize, this.canvas.height);
+            }
+        }
+
+        // Draw horizontal grid lines
+        this.ctx.strokeStyle = '#1f1f1f';
+        this.ctx.lineWidth = 1;
+        for (let y = 0; y <= this.rows; y++) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(0, y * this.blockSize);
+            this.ctx.lineTo(this.canvas.width, y * this.blockSize);
+            this.ctx.stroke();
+        }
+
+        // Draw vertical grid lines
+        for (let x = 0; x <= this.cols; x++) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(x * this.blockSize, 0);
+            this.ctx.lineTo(x * this.blockSize, this.canvas.height);
+            this.ctx.stroke();
+        }
+
         // Draw board
         this.board.forEach((row, y) => {
             row.forEach((value, x) => {
@@ -296,7 +322,15 @@ class Tetris {
     togglePause() {
         this.paused = !this.paused;
         const pauseIcon = document.getElementById('pauseIcon');
-        pauseIcon.src = this.paused ? 'play.svg' : 'pause.svg';
+        if (this.paused) {
+            pauseIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+            </svg>`;
+        } else {
+            pauseIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <path d="M6 4h4v16H6zm8 0h4v16h-4z"/>
+            </svg>`;
+        }
     }
 
     reset() {
@@ -333,32 +367,12 @@ class Tetris {
     }
 }
 
-// Create pause icon
-const pauseSvg = `
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-    <path d="M6 4h4v16H6zm8 0h4v16h-4z"/>
-</svg>`;
-
-const playSvg = `
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-    <path d="M8 5v14l11-7z"/>
-</svg>`;
-
-// Create SVG files
-const createSvgFile = (filename, content) => {
-    const blob = new Blob([content], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-};
-
 // Initialize game when window loads
 window.onload = () => {
-    createSvgFile('pause.svg', pauseSvg);
-    createSvgFile('play.svg', playSvg);
+    const pauseButton = document.getElementById('pauseButton');
+    const pauseIcon = document.getElementById('pauseIcon');
+    pauseIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+        <path d="M6 4h4v16H6zm8 0h4v16h-4z"/>
+    </svg>`;
     new Tetris();
 };
