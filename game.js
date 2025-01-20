@@ -57,7 +57,10 @@ class Tetris {
         // Bind event listeners
         document.addEventListener('keydown', this.handleKeyPress.bind(this));
         const pauseButton = document.getElementById('pauseButton');
-        pauseButton.addEventListener('click', () => this.togglePause());
+        pauseButton.addEventListener('click', () => {
+            this.togglePause();
+            pauseButton.blur();
+        });
         
         // Start game loop
         this.lastTime = 0;
