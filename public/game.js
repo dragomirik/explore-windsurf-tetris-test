@@ -446,41 +446,62 @@ class Tetris {
     }
 
     saveScore() {
-        if (!this.db) return;
-        
         const username = document.getElementById('username').value.trim() || 'Anonymous';
         const score = {
             username,
             score: this.score,
-            date: new Date().toISOString(),
+            date: new Date().toISOString()
         };
 
-        const transaction = this.db.transaction(['highScores'], 'readwrite');
-        const store = transaction.objectStore('highScores');
-        store.add(score);
+        // Save to MongoDB
+        fetch('/api/scores', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(score)
+        })
+        .then(response => response.json())
+        .then(() => this.loadHighScores())
+        .catch(error => console.error('Error saving score to server:', error));
 
-        transaction.oncomplete = () => {
-            this.loadHighScores();
-        };
+        // Save to IndexedDB for offline support
+        if (this.db) {
+            const transaction = this.db.transaction(['highScores'], 'readwrite');
+            const store = transaction.objectStore('highScores');
+            store.add(score);
+        }
     }
 
     loadHighScores() {
-        const transaction = this.db.transaction(['highScores'], 'readonly');
-        const store = transaction.objectStore('highScores');
-        const scoreIndex = store.index('score');
-        
-        const request = scoreIndex.openCursor(null, 'prev');
-        const scores = [];
-        
-        request.onsuccess = (event) => {
-            const cursor = event.target.result;
-            if (cursor && scores.length < 10) {
-                scores.push(cursor.value);
-                cursor.continue();
-            } else {
+        // Try to load from server first
+        fetch('/api/scores')
+            .then(response => response.json())
+            .then(scores => {
                 this.displayHighScores(scores);
-            }
-        };
+            })
+            .catch(error => {
+                console.error('Error loading scores from server:', error);
+                // Fallback to IndexedDB if server is unavailable
+                if (this.db) {
+                    const transaction = this.db.transaction(['highScores'], 'readonly');
+                    const store = transaction.objectStore('highScores');
+                    const scoreIndex = store.index('score');
+                    
+                    const request = scoreIndex.openCursor(null, 'prev');
+                    const scores = [];
+                    
+                    request.onsuccess = (event) => {
+                        const cursor = event.target.result;
+                        if (cursor && scores.length < 10) {
+                            scores.push(cursor.value);
+                            cursor.continue();
+                        } else {
+                            this.displayHighScores(scores);
+                        }
+                    };
+                }
+            });
     }
 
     displayHighScores(scores) {

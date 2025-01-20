@@ -18,3 +18,11 @@ yarn-error.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# Docker
+.docker/
+mongodb_data/
+
+# Logs
+logs/
+*.log
