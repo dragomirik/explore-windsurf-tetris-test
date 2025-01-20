@@ -8,6 +8,9 @@
 </head>
 <body>
     <div class="game-container">
+        <div class="username-container">
+            <input type="text" id="username" placeholder="Enter your username" maxlength="20">
+        </div>
         <div class="score-container">
             <div class="score-box">
                 <div class="score-label">Lines</div>
@@ -27,15 +30,23 @@
                 <div class="panel-label">Hold</div>
                 <canvas id="holdCanvas"></canvas>
             </div>
-            <canvas id="gameCanvas"></canvas>
-            <div class="next-piece">
-                <div class="panel-label">Next</div>
-                <canvas id="nextCanvas"></canvas>
+            <div class="main-game">
+                <canvas id="gameCanvas"></canvas>
+                <button id="pauseButton" class="control-button">
+                    <div id="pauseIcon"></div>
+                </button>
+            </div>
+            <div class="right-panel">
+                <div class="next-piece">
+                    <div class="panel-label">Next</div>
+                    <canvas id="nextCanvas"></canvas>
+                </div>
+                <div class="high-scores">
+                    <div class="panel-label">Top 10 Scores</div>
+                    <div id="highScoresList"></div>
+                </div>
             </div>
         </div>
-        <button id="pauseButton" class="control-button">
-            <div id="pauseIcon"></div>
-        </button>
     </div>
     <script src="game.js"></script>
 </body>

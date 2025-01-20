@@ -54,6 +54,9 @@ class Tetris {
         this.holdPiece = null;
         this.canHold = true;
 
+        // Initialize database
+        this.initDatabase();
+
         // Bind event listeners
         document.addEventListener('keydown', this.handleKeyPress.bind(this));
         const pauseButton = document.getElementById('pauseButton');
@@ -322,8 +325,11 @@ class Tetris {
             
             if (this.collide()) {
                 this.gameOver = true;
-                alert('Game Over!');
-                this.reset();
+                this.saveScore();
+                setTimeout(() => {
+                    alert('Game Over! Your score: ' + this.score);
+                    this.reset();
+                }, 100);
             }
         }
         this.dropCounter = 0;
@@ -415,6 +421,84 @@ class Tetris {
                 <path d="M6 4h4v16H6zm8 0h4v16h-4z" fill="white"/>
             </svg>`;
         }
+    }
+
+    initDatabase() {
+        const request = indexedDB.open('TetrisDB', 1);
+
+        request.onerror = (event) => {
+            console.error('Database error:', event.target.error);
+        };
+
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains('highScores')) {
+                const store = db.createObjectStore('highScores', { keyPath: 'id', autoIncrement: true });
+                store.createIndex('score', 'score');
+                store.createIndex('date', 'date');
+            }
+        };
+
+        request.onsuccess = (event) => {
+            this.db = event.target.result;
+            this.loadHighScores();
+        };
+    }
+
+    saveScore() {
+        if (!this.db) return;
+        
+        const username = document.getElementById('username').value.trim() || 'Anonymous';
+        const score = {
+            username,
+            score: this.score,
+            date: new Date().toISOString(),
+        };
+
+        const transaction = this.db.transaction(['highScores'], 'readwrite');
+        const store = transaction.objectStore('highScores');
+        store.add(score);
+
+        transaction.oncomplete = () => {
+            this.loadHighScores();
+        };
+    }
+
+    loadHighScores() {
+        const transaction = this.db.transaction(['highScores'], 'readonly');
+        const store = transaction.objectStore('highScores');
+        const scoreIndex = store.index('score');
+        
+        const request = scoreIndex.openCursor(null, 'prev');
+        const scores = [];
+        
+        request.onsuccess = (event) => {
+            const cursor = event.target.result;
+            if (cursor && scores.length < 10) {
+                scores.push(cursor.value);
+                cursor.continue();
+            } else {
+                this.displayHighScores(scores);
+            }
+        };
+    }
+
+    displayHighScores(scores) {
+        const highScoresList = document.getElementById('highScoresList');
+        highScoresList.innerHTML = scores.map((score, index) => {
+            const date = new Date(score.date);
+            const formattedDate = date.toLocaleDateString() + ' ' + 
+                date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            return `
+                <div class="high-score-item">
+                    <span class="position">${index + 1}</span>
+                    <span class="username">${score.username}</span>
+                    <span class="score">${score.score.toLocaleString()}</span>
+                    <span class="date">${formattedDate}</span>
+                </div>
+            `;
+        }).join('');
     }
 
     reset() {
