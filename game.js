@@ -56,6 +56,8 @@ class Tetris {
 
         // Bind event listeners
         document.addEventListener('keydown', this.handleKeyPress.bind(this));
+        const pauseButton = document.getElementById('pauseButton');
+        pauseButton.addEventListener('click', () => this.togglePause());
         
         // Start game loop
         this.lastTime = 0;
@@ -176,6 +178,24 @@ class Tetris {
         } else {
             this.holdCtx.fillStyle = 'rgba(0, 0, 15, 0.8)';
             this.holdCtx.fillRect(0, 0, this.holdCanvas.width, this.holdCanvas.height);
+        }
+
+        // Draw pause overlay if game is paused
+        if (this.paused) {
+            // Semi-transparent overlay
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+            // Pause text
+            this.ctx.fillStyle = '#fff';
+            this.ctx.font = 'bold 24px sans-serif';
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+            this.ctx.fillText('PAUSED', this.canvas.width / 2, this.canvas.height / 2);
+            
+            // Instruction text
+            this.ctx.font = '16px sans-serif';
+            this.ctx.fillText('Press P to resume', this.canvas.width / 2, this.canvas.height / 2 + 40);
         }
     }
 
@@ -342,7 +362,16 @@ class Tetris {
     }
 
     handleKeyPress(event) {
-        if (this.gameOver || this.paused) return;
+        if (this.gameOver) return;
+        
+        // Only allow pause toggle when game is running
+        if (event.keyCode === 80) { // P key
+            this.togglePause();
+            return;
+        }
+
+        // Don't process other keys when paused
+        if (this.paused) return;
 
         switch(event.keyCode) {
             case 37: // Left
@@ -367,22 +396,20 @@ class Tetris {
             case 67: // C key
                 this.hold();
                 break;
-            case 80: // P key
-                this.togglePause();
-                break;
         }
     }
 
     togglePause() {
         this.paused = !this.paused;
         const pauseIcon = document.getElementById('pauseIcon');
+        
         if (this.paused) {
             pauseIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z"/>
+                <path d="M8 5v14l11-7z" fill="white"/>
             </svg>`;
         } else {
             pauseIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                <path d="M6 4h4v16H6zm8 0h4v16h-4z"/>
+                <path d="M6 4h4v16H6zm8 0h4v16h-4z" fill="white"/>
             </svg>`;
         }
     }
@@ -409,7 +436,7 @@ class Tetris {
         const deltaTime = time - this.lastTime;
         this.lastTime = time;
 
-        if (!this.paused) {
+        if (!this.paused && !this.gameOver) {
             this.dropCounter += deltaTime;
             if (this.dropCounter > this.dropInterval) {
                 this.drop();
@@ -426,7 +453,7 @@ window.onload = () => {
     const pauseButton = document.getElementById('pauseButton');
     const pauseIcon = document.getElementById('pauseIcon');
     pauseIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-        <path d="M6 4h4v16H6zm8 0h4v16h-4z"/>
+        <path d="M6 4h4v16H6zm8 0h4v16h-4z" fill="white"/>
     </svg>`;
     new Tetris();
 };
