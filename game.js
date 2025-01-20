@@ -27,15 +27,15 @@ class Tetris {
         this.gameOver = false;
         this.paused = false;
         
-        // Tetromino colors
+        // Tetromino colors with modern, vibrant colors
         this.colors = {
-            'I': '#00f0f0',
-            'O': '#f0f000',
-            'T': '#a000f0',
-            'S': '#00f000',
-            'Z': '#f00000',
-            'J': '#0000f0',
-            'L': '#f0a000'
+            'I': '#00E5FF', // Cyan
+            'O': '#FFD700', // Gold
+            'T': '#FF4081', // Pink
+            'S': '#00E676', // Green
+            'Z': '#FF1744', // Red
+            'J': '#2979FF', // Blue
+            'L': '#FF9100'  // Orange
         };
 
         // Tetromino shapes
@@ -77,20 +77,20 @@ class Tetris {
     }
 
     draw() {
-        // Clear canvas
-        this.ctx.fillStyle = 'rgba(0, 0, 15, 0.95)';
+        // Clear canvas with a darker background
+        this.ctx.fillStyle = 'rgba(8, 8, 16, 0.95)';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         // Draw grid background
         for (let x = 0; x < this.cols; x++) {
             if (x % 2 === 0) {
-                this.ctx.fillStyle = '#0f0f0f';
+                this.ctx.fillStyle = 'rgba(16, 16, 24, 0.95)';
                 this.ctx.fillRect(x * this.blockSize, 0, this.blockSize, this.canvas.height);
             }
         }
 
-        // Draw horizontal grid lines
-        this.ctx.strokeStyle = '#1f1f1f';
+        // Draw grid lines
+        this.ctx.strokeStyle = 'rgba(40, 40, 50, 0.95)';
         this.ctx.lineWidth = 1;
         for (let y = 0; y <= this.rows; y++) {
             this.ctx.beginPath();
@@ -112,8 +112,23 @@ class Tetris {
             row.forEach((value, x) => {
                 if (value) {
                     this.ctx.fillStyle = this.colors[value];
+                    // Add gradient effect to blocks
+                    const gradient = this.ctx.createLinearGradient(
+                        x * this.blockSize,
+                        y * this.blockSize,
+                        (x + 1) * this.blockSize,
+                        (y + 1) * this.blockSize
+                    );
+                    gradient.addColorStop(0, this.colors[value]);
+                    gradient.addColorStop(1, this.adjustColor(this.colors[value], -20));
+                    this.ctx.fillStyle = gradient;
                     this.ctx.fillRect(x * this.blockSize, y * this.blockSize, 
                         this.blockSize - 1, this.blockSize - 1);
+                    
+                    // Add highlight
+                    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                    this.ctx.fillRect(x * this.blockSize, y * this.blockSize,
+                        this.blockSize - 1, 2);
                 }
             });
         });
@@ -124,12 +139,29 @@ class Tetris {
                 row.forEach((value, x) => {
                     if (value) {
                         this.ctx.fillStyle = this.currentPiece.color;
+                        // Add gradient effect to blocks
+                        const gradient = this.ctx.createLinearGradient(
+                            (this.currentPiece.x + x) * this.blockSize,
+                            (this.currentPiece.y + y) * this.blockSize,
+                            (this.currentPiece.x + x + 1) * this.blockSize,
+                            (this.currentPiece.y + y + 1) * this.blockSize
+                        );
+                        gradient.addColorStop(0, this.currentPiece.color);
+                        gradient.addColorStop(1, this.adjustColor(this.currentPiece.color, -20));
+                        this.ctx.fillStyle = gradient;
                         this.ctx.fillRect(
                             (this.currentPiece.x + x) * this.blockSize,
                             (this.currentPiece.y + y) * this.blockSize,
                             this.blockSize - 1,
                             this.blockSize - 1
                         );
+                        
+                        // Add highlight
+                        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                        this.ctx.fillRect(
+                            (this.currentPiece.x + x) * this.blockSize,
+                            (this.currentPiece.y + y) * this.blockSize,
+                            this.blockSize - 1, 2);
                     }
                 });
             });
@@ -159,15 +191,37 @@ class Tetris {
             row.forEach((value, x) => {
                 if (value) {
                     ctx.fillStyle = piece.color;
+                    // Add gradient effect to blocks
+                    const gradient = ctx.createLinearGradient(
+                        offsetX + x * blockSize,
+                        offsetY + y * blockSize,
+                        offsetX + (x + 1) * blockSize,
+                        offsetY + (y + 1) * blockSize
+                    );
+                    gradient.addColorStop(0, piece.color);
+                    gradient.addColorStop(1, this.adjustColor(piece.color, -20));
+                    ctx.fillStyle = gradient;
                     ctx.fillRect(
                         offsetX + x * blockSize,
                         offsetY + y * blockSize,
                         blockSize - 1,
                         blockSize - 1
                     );
+                    
+                    // Add highlight
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                    ctx.fillRect(
+                        offsetX + x * blockSize,
+                        offsetY + y * blockSize,
+                        blockSize - 1, 2);
                 }
             });
         });
+    }
+
+    adjustColor(color, amount) {
+        return '#' + color.replace(/^#/, '').replace(/../g, color => 
+            ('0' + Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2));
     }
 
     collide() {
