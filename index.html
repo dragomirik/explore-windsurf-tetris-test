@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Tetris</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="score-container">
+            <div class="score-box">
+                <div class="score-label">Lines</div>
+                <div id="lines">0</div>
+            </div>
+            <div class="score-box">
+                <div class="score-label">Score</div>
+                <div id="score">0</div>
+            </div>
+            <div class="score-box">
+                <div class="score-label">Level</div>
+                <div id="level">1</div>
+            </div>
+        </div>
+        <div class="game-area">
+            <div class="hold-piece">
+                <div class="panel-label">Hold</div>
+                <canvas id="holdCanvas"></canvas>
+            </div>
+            <canvas id="gameCanvas"></canvas>
+            <div class="next-piece">
+                <div class="panel-label">Next</div>
+                <canvas id="nextCanvas"></canvas>
+            </div>
+        </div>
+        <button id="pauseButton" class="control-button">
+            <img src="pause.svg" alt="Pause" id="pauseIcon">
+        </button>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
